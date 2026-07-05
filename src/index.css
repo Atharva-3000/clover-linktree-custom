@@ -1,0 +1,887 @@
+/* ============================================================
+   LINK-ER — Global Design System
+   Theme: Clover Emerald | Minimal Light | Notion-inspired
+   Mobile-First · Editorial · In Motion
+   ============================================================ */
+
+/* --- Design Tokens --- */
+:root {
+  /* Brand */
+  --primary:        #00A76F;
+  --primary-hover:  #009060;
+  --primary-subtle: rgba(0, 167, 111, 0.09);
+  --primary-glow:   rgba(0, 167, 111, 0.2);
+
+  /* Surfaces — deliberately warm off-white, not pure white */
+  --bg:           #FAFAF9;
+  --bg-alt:       #F4F4F2;
+  --surface:      #FFFFFF;
+  --surface-2:    #F7F7F5;
+  --surface-3:    #EFEFED;
+
+  /* Text — Notion-style, not full black */
+  --text-primary:   #1A1A19;
+  --text-secondary: #6B6B68;
+  --text-muted:     #9A9A97;
+  --text-hint:      #B8B8B5;
+
+  /* Borders */
+  --border:        rgba(0, 0, 0, 0.07);
+  --border-med:    rgba(0, 0, 0, 0.11);
+  --border-accent: rgba(0, 167, 111, 0.22);
+
+  /* Shadows — very soft, like Notion */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.07), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.09), 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-cta: 0 8px 32px rgba(0, 167, 111, 0.35), 0 2px 8px rgba(0, 167, 111, 0.2);
+
+  /* Radii */
+  --r-xs:   8px;
+  --r-sm:  12px;
+  --r-md:  16px;
+  --r-lg:  20px;
+  --r-xl:  28px;
+  --r-full: 9999px;
+
+  /* Layout */
+  --font:    'Plus Jakarta Sans', system-ui, sans-serif;
+  --max-w:   460px;
+  --pad:     22px;
+
+  /* Motion */
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease:   cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================================
+   RESET
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 110px;
+}
+
+/* ============================================================
+   ANIMATED BACKGROUND LAYER
+   ============================================================ */
+.bg-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* All content sits above the bg layer */
+main, .floating-cta-wrap {
+  position: relative;
+  z-index: 1;
+}
+
+/* Morphing orbs */
+.bg-orb {
+  position: absolute;
+  filter: blur(80px);
+  will-change: transform, border-radius;
+}
+
+.bg-orb-1 {
+  width: 420px;
+  height: 340px;
+  top: -60px;
+  left: -80px;
+  background: radial-gradient(
+    ellipse,
+    rgba(0, 167, 111, 0.11) 0%,
+    rgba(0, 167, 111, 0.04) 55%,
+    transparent 80%
+  );
+}
+
+.bg-orb-2 {
+  width: 380px;
+  height: 300px;
+  bottom: 10%;
+  right: -100px;
+  background: radial-gradient(
+    ellipse,
+    rgba(0, 196, 132, 0.09) 0%,
+    rgba(0, 167, 111, 0.03) 55%,
+    transparent 80%
+  );
+}
+
+.bg-orb-3 {
+  width: 260px;
+  height: 220px;
+  top: 40%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse,
+    rgba(0, 167, 111, 0.07) 0%,
+    transparent 70%
+  );
+}
+
+/* SVG grain — very subtle, just adds organic texture */
+.bg-grain {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.032;
+  mix-blend-mode: multiply;
+}
+
+/* ── Interactive Leaf Grid ───────────────────────────────────
+   Creates a staggered hexagonal grid of leaves using mask-image
+   ──────────────────────────────────────────────────────────── */
+.leaf-grid {
+  position: absolute;
+  inset: -100px; /* Bleed slightly */
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: auto; /* Allow hover */
+}
+
+.leaf-cell {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* staggered positions set inline by JS */
+}
+
+.leaf-icon {
+  width: 72px;
+  height: 72px;
+  background-color: var(--primary);
+  opacity: 0.06;
+  -webkit-mask-image: url('/leaf.png');
+  -webkit-mask-size: contain;
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  transition: opacity 0.3s, background-color 0.3s, transform 0.4s var(--spring);
+}
+
+.leaf-cell:hover .leaf-icon {
+  /* On hover, the leaf gets its dynamic color (random wrong color OR the lucky green) */
+  background-color: var(--hover-color);
+  opacity: 0.85;
+  transform: scale(1.15) rotate(5deg);
+}
+
+/* When the lucky leaf is found, it stays highlighted */
+.leaf-cell.is-found .leaf-icon {
+  background-color: #00A76F !important;
+  opacity: 1 !important;
+  transform: scale(1.2) rotate(-5deg) !important;
+  filter: drop-shadow(0 4px 12px rgba(0, 167, 111, 0.4));
+}
+
+/* Easter Egg Toast Notification */
+.easter-egg-toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  /* translateX is handled by framer-motion x: '-50%' */
+  background: rgba(0, 167, 111, 0.92);
+  color: #fff;
+  padding: 14px 28px;
+  border-radius: 100px;
+  font-weight: 700;
+  box-shadow: 0 12px 32px rgba(0, 167, 111, 0.35);
+  z-index: 1000;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.toast-icon {
+  font-size: 1.25rem;
+}
+
+img   { display: block; max-width: 100%; }
+a     { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: none; background: none; font-family: var(--font); }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+#root { min-height: 100dvh; }
+
+main {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  width: 100%;
+  pointer-events: none; /* Let hovers pass through the whitespace */
+}
+
+/* Re-enable pointer events for interactive elements inside main */
+.avatar-wrap,
+.hero-name,
+.hero-bio,
+.social-clip-grid,
+.links-stack,
+.footer-wrap {
+  pointer-events: auto;
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero {
+  position: relative;
+  padding: 56px var(--pad) 36px;
+  text-align: center;
+  overflow: hidden;
+  /* Needed for 3D perspective on character-split name */
+  transform-style: preserve-3d;
+}
+
+/* Soft ambient glow — sits behind everything */
+.hero-orb {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  height: 200px;
+  background: radial-gradient(
+    ellipse at 50% 40%,
+    rgba(0, 167, 111, 0.13) 0%,
+    transparent 68%
+  );
+  pointer-events: none;
+  z-index: 0;
+  animation: orbPulse 7s ease-in-out infinite;
+}
+
+@keyframes orbPulse {
+  0%, 100% { opacity: 0.7; transform: translateX(-50%) scale(1); }
+  50%       { opacity: 1;   transform: translateX(-50%) scale(1.1); }
+}
+
+/* Avatar */
+.avatar-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  padding: 6px;
+  
+  /* Premium glass aura */
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    0 8px 32px rgba(0, 167, 111, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  /* Soft breathing animation instead of harsh spinning */
+  animation: glassBreathe 6s ease-in-out infinite alternate;
+  cursor: pointer;
+  transition: transform 0.4s var(--spring), box-shadow 0.4s var(--spring);
+}
+
+.avatar-wrap:hover {
+  transform: translateY(-4px) scale(1.05) !important;
+  box-shadow: 
+    0 16px 48px rgba(0, 167, 111, 0.15),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+  animation-play-state: paused;
+}
+
+@keyframes glassBreathe {
+  0% { box-shadow: 0 8px 32px rgba(0, 167, 111, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.5); }
+  100% { box-shadow: 0 12px 40px rgba(0, 167, 111, 0.16), inset 0 0 0 1.5px rgba(255, 255, 255, 0.7); }
+}
+
+.avatar-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: contain;
+  padding: 16px; /* Gives the leaf breathing room inside the circle */
+  position: relative;
+  z-index: 2;
+  display: block;
+}
+
+/* Hero text — tuned for Plus Jakarta Sans */
+.hero-name {
+  /* Plus Jakarta Sans is tighter and more geometric — needs slightly less tracking */
+  font-size: clamp(2.5rem, 8vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  line-height: 1.12;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-bio {
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-top: 16px;
+  max-width: 380px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================
+   SECTION HEADER — Notion-style subtle label
+   ============================================================ */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.section-head-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--text-hint);
+  /* Plus Jakarta Sans uppercase at small size needs slightly looser tracking */
+  flex-shrink: 0;
+}
+
+.section-head-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ============================================================
+   DIVIDER
+   ============================================================ */
+.divider {
+  padding: 0 var(--pad);
+  margin: 6px 0 28px;
+}
+.divider-line {
+  height: 1px;
+  background: var(--border);
+}
+
+/* ============================================================
+   SOCIAL LINKS — Clip-path color-inversion grid
+   Idle:  brand bg + white icon
+   Hover: white bg + brand-colored icon (full reversal via clip-path)
+   ============================================================ */
+.social-section {
+  padding: 4px var(--pad) 32px;
+}
+
+/* Outer grid shell — thin border, rounded, clips children */
+.social-clip-grid {
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+/* Each horizontal row */
+.social-clip-row {
+  display: grid;
+  /* border set inline via gridTemplateColumns — row dividers: */
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.social-clip-row:last-child { border-bottom: none; }
+
+/* Each cell — background set inline (brand color) */
+.social-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 68px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.social-cell:last-child { border-right: none; }
+
+/* Taller first row (2 cols) — more presence */
+.social-cell--lg { height: 92px; }
+.social-cell--lg .social-cell-icon {
+  width: 26px !important;
+  height: 26px !important;
+}
+
+.social-cell-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
+  /* color set inline per brand */
+}
+
+/* The clip-path overlay — animated by Framer useAnimate */
+.social-cell-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  /* background and icon color set inline (white bg / brand icon) */
+}
+
+/* ============================================================
+   LINK CARDS — 3D Tilt, Sapa Valley layout
+   Top: title + subtitle left, arrow circle right
+   Bottom: full-width glass pill CTA
+   ============================================================ */
+.links-section {
+  padding: 0 var(--pad) 32px;
+}
+
+.links-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Perspective wrapper */
+.card3d-perspective { perspective: 1000px; }
+
+/* Card shell — Framer handles tilt transforms */
+.card3d {
+  position: relative;
+  display: block;
+  text-decoration: none;
+  border-radius: 20px;
+  overflow: hidden;
+  min-height: 190px;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.1);
+  will-change: transform;
+}
+
+/* Full-bleed background image */
+.card3d-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+  transition: transform 0.5s cubic-bezier(0.16,1,0.3,1);
+}
+.card3d:hover .card3d-bg {
+  transform: scale(1.04);
+}
+
+/* Gradient scrim — dark top + heavier dark bottom for legibility */
+.card3d-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom,
+      rgba(0,0,0,0.38) 0%,
+      rgba(0,0,0,0.06) 38%,
+      rgba(0,0,0,0.06) 55%,
+      rgba(0,0,0,0.55) 100%
+    );
+  z-index: 1;
+}
+
+/* Content shell — stacked top + bottom */
+.card3d-shell {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 18px 18px 16px;
+}
+
+/* TOP ROW ─────────────────────── */
+.card3d-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card3d-head { flex: 1; min-width: 0; }
+
+.card3d-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.card3d-subtitle {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: rgba(255,255,255,0.68);
+  margin-top: 3px;
+  letter-spacing: 0;
+}
+
+/* Custom Center Layouts */
+.card-center-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Georgia", "Times New Roman", serif; /* Serif font for classic look */
+  font-size: 3.2rem;
+  font-weight: 400;
+  color: #fff;
+  letter-spacing: -0.02em;
+  width: 100%;
+  padding-bottom: 20px;
+}
+.logo-cl { margin-right: 2px; }
+.logo-ver { margin-left: 2px; }
+.logo-studio {
+  font-family: var(--font); /* Revert back to the sans-serif for "studio" */
+  font-weight: 500;
+  font-size: 1.2rem;
+  margin-left: 6px;
+  opacity: 1;
+  letter-spacing: -0.04em;
+  transform: translateY(8px);
+}
+.logo-leaf {
+  width: 36px;
+  height: 36px;
+  filter: brightness(0) invert(1);
+  margin-top: 4px;
+}
+
+.card-center-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  width: 100%;
+  padding-bottom: 10px;
+}
+.card-center-title {
+  margin-top: 12px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.card-bottom-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  width: 100%;
+  padding-bottom: 20px;
+}
+.card-br-title {
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: #fff;
+  text-align: right;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  white-space: pre-line;
+}
+
+.card3d-leaf-pattern {
+  position: absolute;
+  inset: -50px;
+  background-image: url('/leaf.png'), url('/leaf.png');
+  background-position: 0 0, 40px 40px;
+  background-size: 80px 80px;
+  background-repeat: repeat;
+  background-color: var(--primary);
+  opacity: 0.8;
+  filter: saturate(0.8) brightness(0.9);
+  z-index: 0;
+}
+
+/* Arrow circle — top-right frosted glass (matches Sapa reference) */
+.card3d-arrow-btn {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.28);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: background 0.22s ease, transform 0.22s var(--spring);
+}
+.card3d:hover .card3d-arrow-btn {
+  background: rgba(255,255,255,0.32);
+  transform: translate(2px, -2px);
+}
+
+/* BOTTOM ROW ─────────────────── */
+.card3d-bottom {
+  width: 100%;
+}
+
+/* Glass pill CTA — matches "Book your trip" button in reference */
+.card3d-cta-pill {
+  width: 100%;
+  padding: 11px 18px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.22s ease, border-color 0.22s;
+}
+.card3d:hover .card3d-cta-pill {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.32);
+}
+
+.card3d-cta-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Desktop: slightly taller cards */
+@media (min-width: 500px) {
+  .card3d { min-height: 210px; }
+  .card3d-title { font-size: 1.35rem; }
+}
+
+
+
+
+/* ============================================================
+   FLOATING CTA — Always-on pill
+   Using left:0/right:0 + flex centering to avoid CSS transform
+   conflicting with Framer Motion's y-transform on the wrapper
+   ============================================================ */
+.floating-cta-wrap {
+  position: fixed;
+  bottom: 32px;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+.floating-cta {
+  pointer-events: all;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  /* Larger, more substantial pill */
+  padding: 16px 32px;
+  border-radius: var(--r-full);
+  background: var(--primary);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border: none;
+  cursor: pointer;
+  /* Stronger glow shadow */
+  box-shadow:
+    0 0 0 1px rgba(0, 167, 111, 0.3),
+    0 8px 24px rgba(0, 167, 111, 0.4),
+    0 20px 60px rgba(0, 167, 111, 0.2);
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  /* No CSS transitions — Framer handles hover/tap */
+}
+
+.floating-cta-icon {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+/* Slow shimmer pass — keeps the CTA alive */
+.floating-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  animation: ctaShimmer 3.2s ease-in-out infinite;
+}
+
+@keyframes ctaShimmer {
+  0%, 55%, 100% { transform: translateX(-120%); }
+  30%           { transform: translateX(120%); }
+}
+
+/* Double-line divider (above socials) */
+.divider.double .divider-line {
+  display: none;
+}
+
+.divider.double {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.divider.double::before,
+.divider.double::after {
+  content: '';
+  display: block;
+  height: 1px;
+  background: var(--border-med);
+  border-radius: 1px;
+}
+
+.divider.double::before {
+  opacity: 0.6;
+}
+
+.divider.double::after {
+  opacity: 1;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer {
+  padding: 12px var(--pad) 32px;
+  text-align: center;
+}
+
+.footer-text {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text-hint);
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.footer-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: inline-block;
+  animation: dotPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1);    opacity: 0.5; }
+  50%       { transform: scale(1.6); opacity: 1;   }
+}
+
+/* ============================================================
+   RESPONSIVE — ≥ 500px
+   ============================================================ */
+@media (min-width: 500px) {
+  :root { --pad: 28px; }
+
+  .hero { padding: 68px var(--pad) 42px; }
+
+  .avatar-img {
+    width: 100px;
+    height: 100px;
+  }
+
+  .social-icon-tile {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+  }
+
+  .card-content { padding: 18px 22px; }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --max-w: 500px;
+    --pad: 32px;
+  }
+
+  .hero { padding: 88px var(--pad) 52px; }
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar       { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-med); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
