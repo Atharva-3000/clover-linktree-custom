@@ -24,7 +24,7 @@ export const customLinks = [
   {
     id: "website",
     description: "Clover Studio Website",
-    url: "https://clover.studio",
+    url: "https://clover-studio.vercel.app/",
     bgImage: "/website.png",
     layout: "image-only",
   },
@@ -38,14 +38,14 @@ export const customLinks = [
   {
     id: "pitch",
     description: "Pitch Deck",
-    url: "#",
+    url: "https://drive.google.com/file/d/1aV03wkPDl7iqvzK9a-2AryoEkbhDJyjS/view?usp=sharing",
     bgImage: "/deck-front.png",
     layout: "image-only",
   },
   {
     id: "feedback",
     description: "Feedback/Testimonial Form",
-    url: "#",
+    url: "https://docs.google.com/forms/d/e/1FAIpQLSeGuvjcyp1Zxcx5lGl3ObItM7MeM1CbJIQBUHKj28M-1YZ2sg/viewform?usp=sharing&ouid=104467711622720285237",
     bgImage: "/feedback.png",
     layout: "image-only",
   },
