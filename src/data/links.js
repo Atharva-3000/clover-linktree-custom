@@ -16,7 +16,7 @@ export const socialLinks = [
   { id: "linkedin",  platform: "linkedin",  label: "LinkedIn",  url: "https://www.linkedin.com/company/clover-studio-inc" },
   { id: "spotify",   platform: "spotify",   label: "Spotify",   url: "https://open.spotify.com/track/3WBRfkOozHEsG0hbrBzwlm" },
   { id: "telegram",  platform: "telegram",  label: "Telegram",  url: "https://t.me/ultra_doge" },
-  { id: "whatsapp",  platform: "whatsapp",  label: "WhatsApp",  url: "https://wa.me/919978232404" },
+  { id: "whatsapp",  platform: "whatsapp",  label: "WhatsApp",  url: "https://wa.me/919978232404?text=Hey%20Clover%20Studio%2C%20I%20came%20across%20your%20work%20and%20would%20love%20to%20know%20more." },
 ];
 
 // Custom link cards — 3D tilt, full width
