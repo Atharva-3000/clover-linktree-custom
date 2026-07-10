@@ -13,9 +13,9 @@ export default function Footer() {
       aria-label="Footer"
     >
       <p className="footer-text">
-        <span className="footer-dot" aria-hidden="true" />
-        crafted with Link-er &nbsp;·&nbsp; {year}
+        made by Clover Studio with <span className="footer-heart" aria-label="love">💚</span> &nbsp;·&nbsp; {year}
       </p>
     </motion.footer>
   );
 }
+

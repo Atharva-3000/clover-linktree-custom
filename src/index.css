@@ -820,18 +820,16 @@ main {
   gap: 7px;
 }
 
-.footer-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--primary);
+.footer-heart {
   display: inline-block;
-  animation: dotPulse 2.5s ease-in-out infinite;
+  font-size: 0.85rem;
+  line-height: 1;
+  animation: heartPulse 2.5s ease-in-out infinite;
 }
 
-@keyframes dotPulse {
-  0%, 100% { transform: scale(1);    opacity: 0.5; }
-  50%       { transform: scale(1.6); opacity: 1;   }
+@keyframes heartPulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50%       { transform: scale(1.25); opacity: 1; }
 }
 
 /* ============================================================
